@@ -404,10 +404,10 @@ document.querySelectorAll(".spb").forEach((b, k) => {
     b.addEventListener("contextmenu", (event) => {
         event.preventDefault();
     });
-    b.addEventListener("touchstart", (e) => {
+    b.addEventListener("touchstart", (event) => {
         const touch = e.changedTouches[0];
         activeButtons.set(touch.identifier, [b, k]);
-        screenCanvas.dispatchEvent(new KeyboardEvent("keydown", { key: keys[k] }));
+        canvas.dispatchEvent(new KeyboardEvent("keydown", { key: keys[k] }));
         event.preventDefault();
     });
 });
@@ -419,7 +419,7 @@ document.addEventListener("touchend", (event) => {
         if (bk == undefined) continue;
         const [button, k] = bk;
         if (button) {
-            screenCanvas.dispatchEvent(new KeyboardEvent("keyup", { key: keys[k] }));
+            canvas.dispatchEvent(new KeyboardEvent("keyup", { key: keys[k] }));
             activeButtons.delete(touch.identifier);
         }
     }
