@@ -18,6 +18,36 @@
             canvas {
                 border: 1px solid black;
             }
+            .spb {
+                font-size: 32px;
+                width: 80px;
+                height: 80px;
+                border: 1px solid black;
+                border-radius: 100%;
+                position: fixed;
+                opacity: 50%;
+                visibility: collapse;
+                bottom: 40px;
+            }
+
+            #lButton {
+                left: 10%;
+            }
+            #rButton {
+                left: 20%;
+            }
+            #uButton {
+                left: 30%;
+            }
+            #dButton {
+                left: 40%;
+            }
+            #reButton {
+                left: 60%;
+            }
+            #sButton {
+                left: 80%;
+            }
         </style>
     </head>
 
@@ -26,6 +56,13 @@
         <div id="canvas_wrapper">
             <canvas width="400" height="300" id="canvas"></canvas>
         </div>
+        <button class="spb" id="lButton">←</button>
+        <button class="spb" id="rButton">→</button>
+        <button class="spb" id="uButton">↑</button>
+        <button class="spb" id="dButton">↓</button>
+        <button class="spb" id="reButton">R</button>
+        <button class="spb" id="sButton">SP</button>
+        <button id="smartPhoneButton">スマホ用ボタン表示</button>
         <p>WASD・矢印で移動、Rでリトライ</p>
         <script src="script.js"></script>
     </body>
