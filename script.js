@@ -375,17 +375,28 @@ class GameScene {
     }
 }
 
-const loop = () => {
+let prevTimestamp;
+const maxFps = 60;
+const loop = (timestamp) => {
+    const elapsedSec = (timestamp - prevTimestamp) / 1000;
+    const accuracy = 0.9; // あまり厳密にするとフレームが飛ばされることがあるので
+    const frameTime = (1 / maxFps) * accuracy; // 精度を落とす
+    if (elapsedSec <= frameTime) {
+        requestAnimationFrame(loop.bind(this));
+        return;
+    }
+    prevTimestamp = timestamp;
+
     inputManager.update();
     currentScene.update(inputManager);
     currentScene.render();
-    requestAnimationFrame(loop);
+    requestAnimationFrame(loop.bind(this));
 };
 
 let currentSceneID = 0;
 let currentScene = new GameScene(currentSceneID);
 let inputManager = new InputManager(canvas);
-requestAnimationFrame(loop);
+requestAnimationFrame(loop.bind(this));
 
 smartPhoneButton.addEventListener("click", () => {
     const buttons = document.getElementsByClassName("spb");
