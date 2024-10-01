@@ -405,7 +405,7 @@ document.querySelectorAll(".spb").forEach((b, k) => {
         event.preventDefault();
     });
     b.addEventListener("touchstart", (event) => {
-        const touch = e.changedTouches[0];
+        const touch = event.changedTouches[0];
         activeButtons.set(touch.identifier, [b, k]);
         canvas.dispatchEvent(new KeyboardEvent("keydown", { key: keys[k] }));
         event.preventDefault();
