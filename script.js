@@ -2,64 +2,129 @@
 
 const BLOCKSIZE = 20;
 const CHARA = {
-    " ": ["color", "#aaa", 0],
-    "#": ["color", "#622", 1], // 1: 壁
+    " ": ["color", "#aaa", 16], // 16: 背景
+    "#": ["color", "#622", 1 + 16], // 1: 壁
     "S": ["letter", "😎", 0],
-    "G": ["color", "#cc2", 2], // 2: ゴール
+    ".": ["color", "#48c", 2 + 16], // 2: ゴール
     "P": ["letter", "🥺", 1 + 4 + 8], // 4: 押せるentity, 8:クリア判定あり
+    "p": ["letter", "🥺", 1 + 4 + 8 + 2], // 4: 押せるentity, 8:クリア判定あり
+    "U": ["letter", "💩", 1 + 32], // 32: うんち
+    "u": ["letter", "💩", 1 + 32 + 2], // 32: うんち
+    "Y": ["letter", "🤥", 1 + 4 + 8 + 64], // 64: うんち食べる
+    "y": ["letter", "🤥", 1 + 4 + 8 + 64 + 2], // 64: うんち食べる
 };
 
 const STAGE = [
     [
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "      #########     ",
-        "      #G    PS#     ",
-        "      #########     ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
+        [
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "      #########     ",
+            "      #.    PS#     ",
+            "      #########     ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+        ],
+        [
+            "👨‍🌾「このぷゆゆは寝床が分からないらしいので",
+            "　　 連れて行ってあげてください」",
+            "😎「なんで分かんねえんだよ💢」",
+            "🥺「❓」",
+        ],
     ],
     [
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "      #########     ",
-        "      #G      #     ",
-        "      #GP P PS#     ",
-        "      #G      #     ",
-        "      #########     ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
+        [
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "       ######       ",
+            "       #.   #       ",
+            "       #pPPS#       ",
+            "       #.   #       ",
+            "       ######       ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+        ],
+        ["🥺「ぷー」🥺「ぷー」🥺「ぷー」", "😎「はやく寝ろ」"],
     ],
     [
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "           ####     ",
-        "      ######S #     ",
-        "      #   ##PP#     ",
-        "      # #     ##    ",
-        "     ##    #   #    ",
-        "     #GG ###   #    ",
-        "     ##### #####    ",
-        "                    ",
-        "                    ",
-        "                    ",
-        "                    ",
+        [
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "          ####      ",
+            "     ######S #      ",
+            "     #   ##  #      ",
+            "    ## #    P##     ",
+            "    #     # P #     ",
+            "    # ..###   #     ",
+            "    ##### #####     ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+        ],
+        ["🥺「道に迷っちゃったぷゆ……」", "😎（なんで迷うんだ……？）"],
+    ],
+    [
+        [
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "         #####      ",
+            "        ##   #      ",
+            "        # Y  #      ",
+            "        #    #      ",
+            "      ### #P##      ",
+            "      #..U  S#      ",
+            "      ########      ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+        ],
+        ["🥺「うんちがあって眠れないぷゆ！」", "🤥「ゆめちゃんの食事邪魔するのやめてな」"],
+    ],
+    [
+        [
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "      ########      ",
+            "      #..  Y #      ",
+            "      #. YYYS#      ",
+            "      #.y U U#      ",
+            "      ########      ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+        ],
+        [
+            "🤥「ゆめちゃんうんち食べるよぉ🤥💩」",
+            "🤥「なりすまし🤥💢",
+            "　　 ゆめちゃんいちご食べるよぉ🤥🍓」",
+            "🤥「おまなり🤥💢」",
+            "😎「はよ寝ろ💢」",
+        ],
     ],
 ];
 
@@ -76,6 +141,8 @@ class Entity {
         this.goalY = y;
         this.isMoving = false;
         this.speed = 0.125;
+
+        this.moveHistory = [];
     }
 
     input(inputManager, stageBG, entityList) {
@@ -109,7 +176,7 @@ class Entity {
             const stageEntity = [];
             for (let y = 0; y < 15; y++) {
                 stageEntity[y] = [];
-                for (let x = 0; x < 20; x++) {
+                for (let x = 0; x < 21; x++) {
                     stageEntity[y][x] = {};
                     stageEntity[y][x].c = stageBG[y][x];
                 }
@@ -119,34 +186,78 @@ class Entity {
                 stageEntity[entity.y | 0][entity.x | 0].id = id;
             });
 
-            // 壁(1)かつエンティティでない場合は止める
+            const moves = [];
+
+            const judgeFlag = (block, flag) => (CHARA[block][2] & flag) == flag;
+
+            // 壁(1)かつエンティティ(4)でない場合は止める
             {
                 const block = stageEntity[this.y + this.dy][this.x + this.dx].c;
-                if ((CHARA[block][2] & 1) == 1 && (CHARA[block][2] & 4) != 4) {
+                if (judgeFlag(block, 1) && !judgeFlag(block, 4)) {
                     this.dx = 0;
                     this.dy = 0;
                     this.isMoving = false;
                 }
             }
 
-            // ぷゆゆ(4)の場合、押すが、壁(1)の場合は止める
+            // エンティティ(4)の場合、押すが、壁(1)の場合は止める
             {
                 const block = stageEntity[this.y + this.dy][this.x + this.dx].c;
-                if ((CHARA[block][2] & 4) == 4) {
+                if (judgeFlag(block, 4)) {
                     const block2 = stageEntity[this.y + this.dy * 2][this.x + this.dx * 2].c;
-                    // 壁の場合ストップ
-                    if ((CHARA[block2][2] & 1) == 1) {
-                        this.dx = 0;
-                        this.dy = 0;
-                        this.isMoving = false;
-                    } else {
-                        // 壁ではない場合、動かす
+                    // 壁(1)ではない場合、動かす
+                    // または、block1がゆめ(64)、block2がうんち(32)の場合、動かす
+                    const notWall = !judgeFlag(block2, 1);
+                    const yumePoop = judgeFlag(block, 64) && judgeFlag(block2, 32);
+                    if (notWall || yumePoop) {
+                        if (yumePoop) {
+                            // うんち消去
+                            const block2ID =
+                                stageEntity[this.y + this.dy * 2][this.x + this.dx * 2].id;
+                            moves.push([block2ID, this.x + this.dx * 2, this.y + this.dy * 2]);
+                            entityList[block2ID].x = 20;
+                        }
                         const id = stageEntity[this.y + this.dy][this.x + this.dx].id;
+                        moves.push([id, this.x + this.dx, this.y + this.dy]);
                         const entity = entityList[id];
                         entity.isMoving = true;
                         entity.dx = this.dx;
                         entity.dy = this.dy;
+                    } else {
+                        // 壁の場合ストップ
+                        this.dx = 0;
+                        this.dy = 0;
+                        this.isMoving = false;
                     }
+                }
+            }
+
+            if (this.isMoving) {
+                moves.push(["player", this.x, this.y]);
+            }
+
+            if (moves[0]) {
+                this.moveHistory.push(moves);
+            }
+        }
+
+        if (!this.isMoving) {
+            if (inputManager.getKey("z") == 1) {
+                console.log("undo");
+                const moves = this.moveHistory.pop();
+                if (moves) {
+                    moves.forEach((move) => {
+                        const entity = move[0];
+                        const x = move[1];
+                        const y = move[2];
+                        if (entity == "player") {
+                            this.x = x;
+                            this.y = y;
+                        } else {
+                            entityList[entity].x = x;
+                            entityList[entity].y = y;
+                        }
+                    });
                 }
             }
         }
@@ -265,16 +376,22 @@ class GameScene {
     constructor(stageNum) {
         this.state = "playing";
         this.retryWaitTime = 0;
-        this.stageBG = structuredClone(STAGE[stageNum]);
+        this.commentWaitTime = 0;
+        this.stageBG = structuredClone(STAGE[stageNum][0]);
         this.entityList = [];
         this.goalList = [];
 
         for (let y = 0; y < 15; y++) {
             for (let x = 0; x < 20; x++) {
-                const block = this.stageBG[y][x];
-                if (block == "G") this.goalList.push(new Goal(x, y));
-                if (block != " " && block != "#" && block != "G") {
-                    this.stageBG[y] = nthReplace(this.stageBG[y], x, " ");
+                let block = this.stageBG[y][x];
+                let replaceFlag = false;
+                if ((CHARA[block][2] & 2) == 2) {
+                    this.goalList.push(new Goal(x, y));
+                    this.stageBG[y] = nthReplace(this.stageBG[y], x, ".");
+                    replaceFlag = true;
+                }
+                if ((CHARA[block][2] & 16) != 16) {
+                    if (!replaceFlag) this.stageBG[y] = nthReplace(this.stageBG[y], x, " ");
                     if (block == "S") {
                         this.player = new Entity(block, x, y);
                     } else {
@@ -283,11 +400,35 @@ class GameScene {
                 }
             }
         }
+
+        this.comments = STAGE[stageNum][1];
+        this.commentWaitTime = 300;
     }
 
     update(inputManager) {
         this.retryWaitTime--;
         if (this.state == "playing") {
+            // 入力したらコメント消去
+            if (this.commentWaitTime > 0) {
+                const keyList = [
+                    "ArrowUp",
+                    "ArrowDown",
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "w",
+                    "s",
+                    "a",
+                    "d",
+                    "r",
+                    " ",
+                ];
+                keyList.forEach((k) => {
+                    if (inputManager.getKey(k) == 1) {
+                        this.commentWaitTime = 0;
+                    }
+                });
+            }
+
             this.player.input(inputManager, this.stageBG, this.entityList);
             if (inputManager.getKey("r") == 1) {
                 if (this.retryWaitTime <= 0) {
@@ -358,18 +499,31 @@ class GameScene {
             renderBlock(ctx, entity.char, entity.x, entity.y);
         });
 
-        if (this.retryWaitTime > 0) {
+        if (this.state == "gameClear") {
             ctx.font = "16px monospace";
-            ctx.fillStyle = "#000";
-            ctx.fillText("もう一度Rでリトライ", 200, 270);
-        } else if (this.state == "gameClear") {
-            ctx.font = "16px monospace";
+            ctx.textAlign = "center";
             ctx.fillStyle = "#000";
             if (currentSceneID + 1 == STAGE.length) {
                 ctx.fillText("現在こちらがラストステージです", 200, 250);
                 ctx.fillText("プレイありがとうございました", 200, 270);
             } else {
                 ctx.fillText("Spaceで次のステージ", 200, 270);
+            }
+        } else if (this.retryWaitTime > 0) {
+            ctx.font = "16px monospace";
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#000";
+            ctx.fillText("もう一度Rでリトライ", 200, 270);
+        }
+
+        if (this.commentWaitTime > 0) {
+            ctx.font = "16px monospace";
+            ctx.textAlign = "left";
+            ctx.fillStyle = "#000";
+            if (this.comments) {
+                this.comments.forEach((comment, id) => {
+                    ctx.fillText(comment, 20, 30 + id * 20);
+                });
             }
         }
     }
@@ -410,7 +564,7 @@ smartPhoneButton.addEventListener("click", () => {
 });
 
 const activeButtons = new Map();
-const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "r", " "];
+const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "z", "r", " "];
 document.querySelectorAll(".spb").forEach((b, k) => {
     b.addEventListener("contextmenu", (event) => {
         event.preventDefault();

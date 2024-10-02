@@ -25,28 +25,37 @@
                 border: 1px solid black;
                 border-radius: 100%;
                 position: fixed;
-                opacity: 50%;
+                opacity: 70%;
                 visibility: collapse;
-                bottom: 40px;
             }
 
             #lButton {
-                left: 10%;
+                left: 20px;
+                bottom: 100px;
             }
             #rButton {
-                left: 20%;
+                left: 140px;
+                bottom: 100px;
             }
             #uButton {
-                left: 30%;
+                left: 80px;
+                bottom: 160px;
             }
             #dButton {
-                left: 40%;
+                left: 80px;
+                bottom: 40px;
+            }
+            #zButton {
+                right: 80px;
+                bottom: 40px;
             }
             #reButton {
-                left: 60%;
+                right: 200px;
+                bottom: 40px;
             }
             #sButton {
-                left: 80%;
+                right: 40px;
+                bottom: 160px;
             }
         </style>
     </head>
@@ -60,10 +69,11 @@
         <button class="spb" id="rButton">→</button>
         <button class="spb" id="uButton">↑</button>
         <button class="spb" id="dButton">↓</button>
+        <button class="spb" id="zButton">Z</button>
         <button class="spb" id="reButton">R</button>
         <button class="spb" id="sButton">SP</button>
         <button id="smartPhoneButton">スマホ用ボタン表示</button>
-        <p>WASD・矢印で移動、Rでリトライ</p>
+        <p>WASD・矢印で移動、Zで一手戻し、Rでリトライ</p>
         <script src="script.js"></script>
     </body>
 </html>
