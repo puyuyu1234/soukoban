@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title></title>
+        <title>🥺を倉庫に押し込むゲーム</title>
         <link rel="stylesheet" href="style.css" />
 
         <style>
@@ -12,16 +12,19 @@
                 padding: 10px;
             }
             #canvas_wrapper {
-                width: 400px;
+                max-width: 400px;
                 margin: 0 auto;
             }
             canvas {
+                width: 100%;
                 border: 1px solid black;
             }
             .spb {
-                font-size: 32px;
-                width: 80px;
-                height: 80px;
+                font-size: min(8vw, 32px);
+                max-width: 80px;
+                max-height: 80px;
+                width: 20vw;
+                height: 20vw;
                 border: 1px solid black;
                 border-radius: 100%;
                 position: fixed;
@@ -30,32 +33,37 @@
             }
 
             #lButton {
-                left: 20px;
-                bottom: 100px;
+                left: 5vw;
+                bottom: 25vw;
             }
             #rButton {
-                left: 140px;
-                bottom: 100px;
+                left: 35vw;
+                bottom: 25vw;
             }
             #uButton {
-                left: 80px;
-                bottom: 160px;
+                left: 20vw;
+                bottom: 40vw;
             }
             #dButton {
-                left: 80px;
-                bottom: 40px;
+                left: 20vw;
+                bottom: 10vw;
             }
             #zButton {
-                right: 80px;
-                bottom: 40px;
+                right: 15vw;
+                bottom: 10vw;
             }
             #reButton {
-                left: 20px;
-                bottom: 280px;
+                left: 5vw;
+                bottom: 70vw;
             }
             #sButton {
-                right: 40px;
-                bottom: 160px;
+                right: 5vw;
+                bottom: 40vw;
+            }
+            #esButton {
+                font-size: min(4vw, 16px);
+                right: 5vw;
+                bottom: 70vw;
             }
         </style>
     </head>
@@ -72,12 +80,18 @@
         <button class="spb" id="zButton">Z</button>
         <button class="spb" id="reButton">R</button>
         <button class="spb" id="sButton">SP</button>
+        <button class="spb" id="esButton">ESC</button>
         <button id="smartPhoneButton">スマホ用ボタン表示</button>
-        <p>WASD・矢印で移動、Zで一手戻し、Rでリトライ</p>
+        <p>WASD・矢印で移動、Zで一手戻し、Rでリトライ、ESCでメニュー</p>
         <script src="engine.js"></script>
         <script src="ease.js"></script>
         <script src="parameters.js"></script>
         <script src="input_event.js"></script>
+        <script src="entity.js"></script>
+        <script src="scene/game.js"></script>
+        <script src="scene/menu.js"></script>
+        <script src="scene/title.js"></script>
+        <script src="scene/stage_select.js"></script>
         <script src="main.js"></script>
     </body>
 </html>

@@ -1,20 +1,171 @@
 "use strict";
 
+const formatString = (format, ...args) => {
+    return format.replace(/{(\d+)}/g, (match, index) =>
+        typeof args[index] !== "undefined" ? args[index] : match
+    );
+};
+
 const nthReplace = (str, n, after) => {
     return str.replace(RegExp(`(?<=^.{${n}}).`), after);
 };
 
-class Actor {
+class Rectangle {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+}
+
+class CookieManager {
+    // Cookieの読み取り
+    static getCookie(name) {
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+            const [cookieName, cookieValue] = cookie.split("=");
+            if (cookieName === name) {
+                return decodeURIComponent(cookieValue);
+            }
+        }
+        return null; // Cookieが存在しない場合はnullを返す
+    }
+
+    // Cookieの書き込み
+    static setCookie(name, value, days = 365, path = "/") {
+        const expires = new Date();
+        expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+        const cookieValue = encodeURIComponent(value);
+        document.cookie = `${name}=${cookieValue}; expires=${expires.toUTCString()}; path=${path}; SameSite=Lax`;
+        return this.getCookie(name) == value;
+    }
+
+    // Cookieの削除
+    static deleteCookie(name, path = "/") {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
+    }
+}
+
+class EventDispatcher {
+    constructor() {
+        this._eventListeners = {};
+    }
+
+    addEventListener(type, callback) {
+        if (this._eventListeners[type] == undefined) {
+            this._eventListeners[type] = [];
+        }
+
+        this._eventListeners[type].push(callback);
+    }
+
+    removeEventListener(type) {
+        this._eventListeners[type] = [];
+    }
+
+    dispatchEvent(type, event) {
+        const listeners = this._eventListeners[type];
+        if (listeners != undefined) listeners.forEach((callback) => callback(event));
+    }
+}
+
+class Sprite {
+    constructor(image, rectangle) {
+        this.image = image;
+        this.rectangle = rectangle;
+    }
+}
+
+class AssetLoader {
+    constructor() {
+        this._promises = [];
+        this._assets = new Map();
+    }
+
+    addImage(name, url) {
+        const img = new Image();
+        img.src = url;
+
+        const promise = new Promise((resolve) =>
+            img.addEventListener("load", () => {
+                this._assets.set(name, img);
+                resolve(img);
+            })
+        );
+
+        this._promises.push(promise);
+    }
+
+    async loadAll() {
+        await Promise.all(this._promises);
+        return this._assets;
+    }
+
+    get(name) {
+        return this._assets.get(name);
+    }
+}
+
+const assets = new AssetLoader();
+
+class GameEvent {
+    constructor(target) {
+        this.target = target;
+    }
+}
+
+class Actor extends EventDispatcher {
     constructor(x, y) {
+        super();
         this.x = x;
         this.y = y;
         this.layer = 0;
         this.id = 0;
         this.time = 0;
+        this.tags = [];
+        this.globalAlpha = 1;
+        this.rotate = 0;
     }
 
+    hasTag(tagName) {
+        return this.tags.includes(tagName);
+    }
     update() {}
-    render(canvas) {}
+    render(canvas) {
+        const ctx = canvas.getContext("2d");
+        ctx.save();
+        ctx.globalAlpha = this.globalAlpha;
+    }
+}
+
+class SpriteActor extends Actor {
+    constructor(sprite, x, y, width, height) {
+        super(x, y);
+        this.sprite = sprite;
+        this.width = width;
+        this.height = height;
+    }
+
+    render(canvas) {
+        super.render(canvas);
+        const ctx = canvas.getContext("2d");
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+        ctx.rotate((this.rotate * Math.PI) / 180);
+        ctx.translate(-this.x - this.width / 2, -this.y - this.height / 2);
+        ctx.drawImage(
+            this.sprite.image,
+            this.sprite.rectangle.x,
+            this.sprite.rectangle.y,
+            this.sprite.rectangle.width,
+            this.sprite.rectangle.height,
+            this.x,
+            this.y,
+            this.width,
+            this.height
+        );
+        ctx.restore();
+    }
 }
 
 class RectActor extends Actor {
@@ -26,9 +177,14 @@ class RectActor extends Actor {
     }
 
     render(canvas) {
+        super.render(canvas);
         const ctx = canvas.getContext("2d");
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+        ctx.rotate((this.rotate * Math.PI) / 180);
+        ctx.translate(-this.x - this.width / 2, -this.y - this.height / 2);
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.restore();
     }
 }
 
@@ -43,12 +199,17 @@ class TextActor extends Actor {
     }
 
     render(canvas) {
+        super.render(canvas);
         const ctx = canvas.getContext("2d");
+        ctx.translate(this.x, this.y);
+        ctx.rotate((this.rotate * Math.PI) / 180);
+        ctx.translate(-this.x, -this.y);
         ctx.fillStyle = this.color;
         ctx.textBaseline = this.textBaseline;
         ctx.textAlign = this.textAlign;
         ctx.font = this.font;
         ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
     }
 }
 
@@ -122,8 +283,9 @@ class InputManager {
     }
 }
 
-class Scene {
+class Scene extends EventDispatcher {
     constructor() {
+        super();
         this.actorsList = [];
     }
 
@@ -132,6 +294,11 @@ class Scene {
             this.actorsList[actor.layer] = [];
         }
         this.actorsList[actor.layer][actor.id] = actor;
+    }
+
+    changeScene(newSceneList) {
+        const event = new GameEvent(newSceneList);
+        this.dispatchEvent("changescene", event);
     }
 
     update(inputManager) {
@@ -156,11 +323,19 @@ class Scene {
 }
 
 class Game {
-    constructor(canvas, currentScene, maxFps = 60) {
-        this.currentScene = currentScene;
+    constructor(canvas, currentSceneList, maxFps = 60) {
+        this.currentSceneList = currentSceneList;
         this.prevTimestamp = 0;
         this.maxFps = maxFps;
         this.inputManager = new InputManager(canvas);
+    }
+
+    changeScene(newSceneList) {
+        this.currentSceneList = newSceneList;
+        this.currentSceneList.forEach((currentScene) => {
+            currentScene.removeEventListener("changescene");
+            currentScene.addEventListener("changescene", (e) => this.changeScene(e.target));
+        });
     }
 
     _loop(timestamp) {
@@ -174,8 +349,10 @@ class Game {
         this.prevTimestamp = timestamp;
 
         this.inputManager.update();
-        currentScene.update(this.inputManager);
-        currentScene.render(canvas);
+        this.currentSceneList.forEach((currentScene) => {
+            currentScene.update(this.inputManager);
+            currentScene.render(canvas);
+        });
         requestAnimationFrame(this._loop.bind(this));
     }
 
