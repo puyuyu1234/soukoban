@@ -3,6 +3,17 @@
 class StageSelect extends Scene {
     constructor(stageNum = 0) {
         super();
+        const bgm = new Actor(0, 0);
+        bgm.layer = 10;
+        if (!audio.bgm.isPlaying) {
+            audio.bgm.changeVolume(0);
+            audio.bgm.play();
+            bgm.update = () => {
+                audio.bgm.changeVolume(easeLinear(0, 0.3, bgm.time++, 20));
+                bgm.time++;
+            };
+        }
+        this.add(bgm);
         this.stageNum = stageNum;
         this.cursorX = stageNum % 4;
         this.cursorY = (stageNum / 4) | 0;
@@ -63,6 +74,16 @@ class StageSelect extends Scene {
         space.font = "16px monospace";
         actorList.push(FG, space);
 
+        // credit
+        if (stageScoreList[20] != 999) {
+            this.cursorLimitY++;
+            const credit = new TextActor(TEXT.select.credit, 370, 55);
+            credit.font = "12px monospace";
+            credit.color = "#fff";
+            const creditRect = new RectActor("#000", 350, 40, 40, 30);
+            actorList.push(creditRect, credit);
+        }
+
         addActors(actorList);
         this.stageRender(stageNum + 1);
     }
@@ -83,7 +104,7 @@ class StageSelect extends Scene {
                 this.add(actor);
             });
         };
-        const actorList = [];
+        let actorList = [];
         const stageText = new TextActor(formatString(TEXT.select.stage, stageNum), 100, 90);
         const sc1 = stageScoreList[stageNum] ?? "--";
         const sc2 = stageHighScoreList[stageNum] ?? "--";
@@ -124,7 +145,8 @@ class StageSelect extends Scene {
                 }
             }
         } else {
-            for (let i = 0; i < 300; i++) {
+            actorList = [];
+            for (let i = 0; i < 303; i++) {
                 const ac = new Actor(0, 0);
                 actorList.push(ac);
             }
@@ -148,6 +170,7 @@ class StageSelect extends Scene {
     }
 
     update(inputManager) {
+        if (this.isFreeze) return;
         super.update(inputManager);
 
         // カーソル移動
@@ -163,13 +186,20 @@ class StageSelect extends Scene {
         ];
         cursorMoveList.forEach((cursorMove, id) => {
             if (inputManager.getKey(cursorMove[0]) == 1) {
+                audio.move.play();
                 this.cursorX = (4 + this.cursorX + cursorMoveList[id][1]) % 4;
                 this.cursorY =
                     (this.cursorLimitY + this.cursorY + cursorMoveList[id][2]) % this.cursorLimitY;
                 this.cursor.x0 = this.cursor.x;
                 this.cursor.y0 = this.cursor.y;
-                const x1 = 195 + 50 * this.cursorX;
-                const y1 = 75 + 40 * this.cursorY;
+                let x1 = 195 + 50 * this.cursorX;
+                let y1 = 75 + 40 * this.cursorY;
+
+                // credit
+                if (this.cursorY == 5) {
+                    x1 = 195 + 50 * 3;
+                    y1 = 75 + 40 * -1;
+                }
 
                 this.cursor.time = 0;
                 this.cursor.update = () => {
@@ -184,6 +214,7 @@ class StageSelect extends Scene {
 
         if (inputManager.getKey(" ") == 1) {
             if (STAGE[1 + this.stageNum]) {
+                audio.select.play();
                 const blackActor = this.makeBlackActor(
                     0,
                     400,
@@ -192,6 +223,9 @@ class StageSelect extends Scene {
                     25
                 );
                 this.add(blackActor);
+            } else {
+                this.isFreeze = true;
+                this.changeScene([this, new CreditScene(this)]);
             }
         }
     }

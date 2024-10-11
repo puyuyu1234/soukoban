@@ -26,7 +26,7 @@ class GameScene extends Scene {
                 // Entity登録
                 if ((CHARA[block][2] & 16) != 16) {
                     if (!replaceFlag) this.stageBG[y] = nthReplace(this.stageBG[y], x, " ");
-                    if (block == "S") {
+                    if (block == "S" || block == "!") {
                         this.player = new Player(block, x, y);
                     } else {
                         const entity = new Entity(block, x, y);
@@ -206,6 +206,7 @@ class GameScene extends Scene {
     updateInput(inputManager) {
         // リトライ受付
         if (inputManager.getKey("r") == 1) {
+            audio.move.play();
             if (this.retryWaitTime <= 0) {
                 const retryActor = new TextActor(TEXT.retry, 200, 290);
                 retryActor.font = "16px monospace";
@@ -276,7 +277,7 @@ class GameScene extends Scene {
             // ゴール判定
             let c = 0;
             this.goalList.forEach((goal) => {
-                if (goal.judgeEntity(this.entityList)) {
+                if (goal.judgeEntity(this.player, this.entityList)) {
                     c++;
                 }
             });
@@ -286,11 +287,12 @@ class GameScene extends Scene {
             if (c == this.goalList.length) {
                 // スコア記録
                 {
+                    if (stageScoreList[this.stageNum] == 999) this.firstClear = true;
                     const newScore = Math.min(
                         stageScoreList[this.stageNum],
                         this.player.moveHistory.length
                     );
-                    if (newScore < stageScoreList[this.stageNum]) {
+                    if (newScore < stageScoreList[this.stageNum] && !this.firstClear) {
                         // highscore
                         const highscore = new TextActor(TEXT.highScore, 200, 230);
                         highscore.globalAlpha = 0;
@@ -329,6 +331,7 @@ class GameScene extends Scene {
 
                 // クリア演出
                 {
+                    audio.clear.play();
                     const setEase = (actor, x0, x1, moveTime) => {
                         actor.update = () => {
                             actor.x = easeOutExpo(x0, x1, actor.time, moveTime);
@@ -379,6 +382,10 @@ class GameScene extends Scene {
                     this.add(clearActor);
                     this.add(clearActor2);
                     this.state = "gameClear";
+
+                    if (this.firstClear) {
+                        this.changeScene([this, new CreditScene(this)]);
+                    }
                 } else {
                     const clearActor =
                         this.stageNum == 0
@@ -399,6 +406,7 @@ class GameScene extends Scene {
                 if (this.stageNum + 1 == STAGE.length) {
                     // last stage
                 } else {
+                    audio.select.play();
                     const blackActor = this.makeBlackActor(
                         0,
                         400,

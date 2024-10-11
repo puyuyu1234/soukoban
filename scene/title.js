@@ -3,13 +3,11 @@
 class TitleScene extends GameScene {
     constructor() {
         super(0);
-        this.isFreeze = true;
         const BG = new RectActor("#000", 0, 0, 400, 300);
         BG.layer = 7;
         BG.update = () => {
             if (BG.time > 300) {
                 BG.height = easeLinear(300, 0, BG.time - 300, 60);
-                this.isFreeze = false;
             }
             BG.time++;
         };
@@ -22,7 +20,7 @@ class TitleScene extends GameScene {
         this.titleActors = [titleBG];
         const titleActorsData = [
             ["🥺", 400, 250, "60px"],
-            ["を倉庫に", 480, 240, "20px"],
+            ["を寝床に", 480, 240, "20px"],
             ["押し込むゲーム", 500, 270, "20px"],
             ["👐", 630, 250, "60px"],
             ["😎", 700, 250, "60px"],
@@ -35,6 +33,9 @@ class TitleScene extends GameScene {
             titleActor.layer = 8;
             titleActor.id = 1 + id;
             titleActor.update = () => {
+                if (titleActor.time % 60 == 0 && titleActor.time <= 300) {
+                    audio.push.play();
+                }
                 titleActor.x = easeLinear(tad[1], tad[1] - 390, titleActor.time, 300);
                 titleActor.time++;
             };

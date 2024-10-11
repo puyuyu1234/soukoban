@@ -20,7 +20,8 @@ class MenuScene extends Scene {
         };
 
         const BG = new RectActor("#000c", 0, 20, 400, 260);
-        const actorList = [BG];
+        const BG2 = new RectActor("#000", 0, 280, 400, 20);
+        const actorList = [BG, BG2];
 
         // ボタンなど
         {
@@ -147,15 +148,17 @@ class MenuScene extends Scene {
             this.setChoiseAnimation(this.button.selectID);
         }
 
-        const keyList = ["ArrowUp", "ArrowDwon", "w", "s"];
+        const keyList = ["ArrowUp", "ArrowDown", "w", "s"];
         keyList.forEach((key) => {
             if (inputManager.getKey(key) == 1) {
+                audio.move.play();
                 this.button.selectID = (this.button.selectID + 1) % 2;
                 this.setChoiseAnimation(this.button.selectID);
             }
         });
 
         if (inputManager.getKey(" ") == 1) {
+            audio.select.play();
             if (this.button.selectID == 0) {
                 this.close();
             } else {

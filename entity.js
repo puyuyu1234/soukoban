@@ -44,19 +44,19 @@ class Entity {
         const selfBlock = stageEntity[this.y][this.x];
         // otherLetterと同一の場合はreturn true
         if (this.otherLetterList.includes(block.entity)) {
-            moves.push([selfBlock.id, this.x, this.y]);
+            moves.push([selfBlock.id, this.x, this.y, this.actor.text]);
             return true;
         }
 
         // 黄色(8)かつ、thisがeater(512)の場合はtrue
         if (judgeFlag(block.c, 8) && judgeFlag(this.c, 512)) {
-            moves.push([block.id, block.entity.x, block.entity.y]);
-            moves.push([selfBlock.id, this.x, this.y]);
+            moves.push([block.id, block.entity.x, block.entity.y, block.entity.actor.text]);
+            moves.push([selfBlock.id, this.x, this.y, this.actor.text]);
             // 黄色消去
             block.entity.x = 20;
             block.entity.otherLetterList.forEach((e) => {
                 const bl = stageEntity[e.y][e.x];
-                moves.push([bl.id, e.x, e.y]);
+                moves.push([bl.id, e.x, e.y, e.actor.text]);
                 e.x = 20;
             });
             return true;
@@ -71,9 +71,9 @@ class Entity {
             });
             if (f) {
                 if (this.hasTag("player")) {
-                    moves.push(["player", this.x, this.y]);
+                    moves.push(["player", this.x, this.y, this.actor.text]);
                 } else {
-                    moves.push([selfBlock.id, this.x, this.y]);
+                    moves.push([selfBlock.id, this.x, this.y, this.actor.text]);
                 }
             } else {
                 this.isMoving = false;
@@ -84,10 +84,16 @@ class Entity {
 
         // うんち(32)かつ、thisがゆめ(64)の場合はreturn true
         if (judgeFlag(block.c, 32) && judgeFlag(this.c, 64)) {
-            moves.push([block.id, block.entity.x, block.entity.y]);
-            moves.push([selfBlock.id, this.x, this.y]);
+            moves.push([block.id, block.entity.x, block.entity.y, block.entity.actor.text]);
+            moves.push([selfBlock.id, this.x, this.y, this.actor.text]);
             // うんち消去
             block.entity.x = 20;
+            return true;
+        }
+
+        // 透過壁(1024)で、プレイヤーの場合は透過可能
+        if (judgeFlag(block.c, 1024) && this.hasTag("player")) {
+            moves.push(["player", this.x, this.y, this.actor.text]);
             return true;
         }
 
@@ -100,9 +106,9 @@ class Entity {
 
         // 何もない場合
         if (this.hasTag("player")) {
-            moves.push(["player", this.x, this.y]);
+            moves.push(["player", this.x, this.y, this.actor.text]);
         } else {
-            moves.push([selfBlock.id, this.x, this.y]);
+            moves.push([selfBlock.id, this.x, this.y, this.actor.text]);
         }
         return true;
     }
@@ -129,6 +135,10 @@ class Entity {
             this.y += this.speed;
         }
         if (this.isMoving) {
+            // ぷゆゆ変化(2048)の場合、変化
+            if ((CHARA[this.c][2] & 2048) == 2048) {
+                this.actor.text = "🥺";
+            }
             if (Number.isInteger(this.x + this.y)) {
                 this.isMoving = false;
                 this.dx = 0;
@@ -178,21 +188,23 @@ class Player extends Entity {
         }
 
         if (!this.isMoving) {
+            // 巻き戻し
             const z = inputManager.getKey("z");
             if (z == 1 || (z >= 20 && z % 3 == 0)) {
-                console.log("undo");
                 const moves = this.moveHistory.pop();
                 if (moves) {
                     moves.forEach((move) => {
                         const entityID = move[0];
                         const x = move[1];
                         const y = move[2];
+                        const text = move[3];
                         if (entityID == "player") {
                             this.x = x;
                             this.y = y;
                         } else {
                             entityList[entityID].x = x;
                             entityList[entityID].y = y;
+                            entityList[entityID].actor.text = text;
                         }
                     });
                 }
@@ -222,6 +234,9 @@ class Player extends Entity {
 
         if (canMove) {
             this.moveHistory.push(moves);
+            if (moves.length >= 2) {
+                audio.push.play();
+            }
         }
     }
 }
