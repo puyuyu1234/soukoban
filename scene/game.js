@@ -112,10 +112,9 @@ class GameScene extends Scene {
 
         // ステージバーアクターなど追加
         {
-            const stageName = new TextActor(formatString(TEXT.stage, stageNum), 50, 10);
-            const step = new TextActor("STEP : 0", 250, 10);
+            const stageName = new TextActor(formatString(TEXT.stage, stageNum), 100, 10);
+            const step = new TextActor("STEP : 0", 300, 10);
             stageName.color = step.color = "#fff";
-            stageName.textAlign = step.textAlign = "left";
             step.update = () => {
                 step.text = formatString(
                     TEXT.step,
