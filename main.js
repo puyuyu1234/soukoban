@@ -73,7 +73,7 @@ class Goal {
 
 const stageScoreList = Array(STAGE.length).fill(999);
 const stageHighScoreList = [
-    5, 8, 11, 42, 42, 38, 50, 51, 43, 26, 36, 57, 19, 35, 74, 19, 33, 52, 52, 113, 20,
+    5, 8, 11, 42, 42, 38, 50, 51, 43, 26, 36, 57, 19, 35, 74, 19, 33, 52, 52, 111, 20,
 ];
 for (let i = 0; i < STAGE.length; i++) {
     const cookieName = "stageScore_" + i;
